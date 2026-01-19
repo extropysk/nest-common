@@ -1,7 +1,7 @@
 import { DynamicModule, Module, Type } from '@nestjs/common'
 
 export abstract class IStorageService {
-  abstract set<T>(key: string, value: T, exp?: string): Promise<void>
+  abstract set<T>(key: string, value: T, exp?: number): Promise<void>
   abstract get<T>(key: string): Promise<T | null>
   abstract del(key: string): Promise<number>
 }
