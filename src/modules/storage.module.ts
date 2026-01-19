@@ -1,10 +1,4 @@
-import { DynamicModule, Module, Type } from '@nestjs/common'
-
-export const STORAGE_CONFIG = 'storage_config'
-
-export interface StorageConfig {
-  collectionName?: string
-}
+import { DynamicModule, Module } from '@nestjs/common'
 
 export abstract class IStorageService {
   abstract set<T>(key: string, value: T, exp?: number): Promise<void>
@@ -13,13 +7,11 @@ export abstract class IStorageService {
 }
 
 interface Config {
-  useClass: Type<IStorageService>
-  config?: StorageConfig
+  useFactory: () => IStorageService
 }
 
 interface AsyncConfig {
-  useClass: Type<IStorageService>
-  useFactory: (...args: unknown[]) => StorageConfig | Promise<StorageConfig>
+  useFactory: (...args: unknown[]) => IStorageService | Promise<IStorageService>
   inject?: any[]
   imports?: any[]
 }
@@ -32,15 +24,11 @@ export class StorageModule {
       global: true,
       providers: [
         {
-          provide: STORAGE_CONFIG,
-          useValue: options.config ?? {},
-        },
-        {
           provide: IStorageService,
-          useClass: options.useClass,
+          useFactory: () => options.useFactory(),
         },
       ],
-      exports: [IStorageService, STORAGE_CONFIG],
+      exports: [IStorageService],
     }
   }
 
@@ -51,16 +39,12 @@ export class StorageModule {
       imports: options?.imports || [],
       providers: [
         {
-          provide: STORAGE_CONFIG,
+          provide: IStorageService,
           useFactory: options.useFactory,
           inject: options.inject ?? [],
         },
-        {
-          provide: IStorageService,
-          useClass: options.useClass,
-        },
       ],
-      exports: [IStorageService, STORAGE_CONFIG],
+      exports: [IStorageService],
     }
   }
 }
